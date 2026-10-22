@@ -1,0 +1,65 @@
+# Hermes config.yaml settings used by this bot.
+#
+# This is NOT a complete Hermes config. It lists only the keys this deployment
+# changed or depends on. Generate a full default config with Hermes first
+# (hermes setup), then merge these values into /opt/data/config.yaml.
+# A config containing only these keys has not been tested.
+#
+# Placeholders: replace every <...> value. Never commit the real file.
+#
+# Most of these keys are read once at boot. After editing, restart the gateway
+# (send /restart in an allowlisted chat, or restart the Railway service).
+
+model:
+  default: gemini-3.8-flash          # primary model in the last deployed config
+  provider: gemini                   # needs GEMINI_API_KEY in .env
+
+# Used when the primary fails (rate limit, outage, removed model).
+# Free models get retired without notice: test each one before relying on it.
+fallback_providers:
+  - provider: nous
+    model: meituan/longcat-2.5-preview:free
+  - provider: nous
+    model: poolside/laguna-s-2.1:free
+
+compression:
+  enabled: true
+  threshold: 0.5
+  # Hermes compresses at a share of the model's context window by default.
+  # With a very large window that point is never reached and history grows
+  # forever. A fixed token threshold keeps every chat small.
+  threshold_tokens: 24000
+  protect_last_n: 6                  # keep only the last 6 messages word for word
+
+display:
+  tool_progress: false               # stop "Running code..." narration in WhatsApp
+
+tool_loop_guardrails:
+  hard_stop_enabled: true
+
+# One session per sender inside each group, so one person's history does not
+# leak into another person's turn.
+group_sessions_per_user: true
+
+platforms:
+  whatsapp:
+    enabled: true
+    home_channel:
+      platform: whatsapp
+      chat_id: <owner-id>@lid        # where cron alerts and owner DMs go
+      name: <owner-name>
+      user_id: <owner-id>@lid
+    extra:
+      group_policy: allowlist
+      # Comma-separated group JIDs the bot may answer in. Read at boot only.
+      group_allow_from: <group-id-1>@g.us,<group-id-2>@g.us
+
+# Commands that run a script directly, with no model call.
+quick_commands:
+  aitrends:
+    type: exec
+    command: node /opt/data/scripts/aitrends/report.js
+
+plugins:
+  enabled:
+    - gmeet

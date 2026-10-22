@@ -1,0 +1,4 @@
+name: gmeet
+version: 1.0.0
+description: "/gmeet instant or /gmeet <time> [<date>]: Google Meet link, no LLM."
+author: Jatin Dinesh

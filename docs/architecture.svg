@@ -1,0 +1,473 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1320" height="1080" viewBox="0 0 1320 1080" font-family="Roboto, Arial, sans-serif">
+<title>Setup Hermes Agent for WhatsApp: From a WhatsApp command to an automated action</title>
+<desc>Single-canvas technical architecture poster. Request/response loop: WhatsApp on a phone -> Baileys + bridge.js -> logging + allowlist -> Hermes Agent (SKILL.md) -> Firecrawl -> deterministic scripts -> Google Sheets -> LLM formatting -> reply to WhatsApp. Hosted on Railway with /opt/data (skills, scripts, whatsapp logs). Every major component is a grouped, id-tagged, animation-ready element.</desc>
+
+<!-- ============================== DEFS ============================== -->
+<defs>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=Roboto+Mono:wght@400;500;700&amp;display=swap');
+    text{ text-rendering:geometricPrecision; }
+    .title{ font-weight:700; font-size:46px; fill:#202124; letter-spacing:-.5px; }
+    .subtitle{ font-weight:400; font-size:21px; fill:#5F6368; }
+    .phase{ font-weight:700; font-size:16px; letter-spacing:1.2px; }
+    .phasenum{ font-weight:700; font-size:12px; fill:#FFFFFF; }
+    .h{ font-weight:700; font-size:18px; fill:#202124; }
+    .h2{ font-weight:700; font-size:15px; fill:#202124; }
+    .lab{ font-weight:400; font-size:13px; fill:#5F6368; }
+    .labd{ font-weight:400; font-size:12px; fill:#5F6368; }
+    .white{ fill:#FFFFFF; }
+    .mono{ font-family:'Roboto Mono', ui-monospace, monospace; font-size:11px; }
+    .legend{ font-weight:400; font-size:13px; fill:#3C4043; }
+    .badge{ font-weight:700; font-size:14px; fill:#FFFFFF; }
+    .tag{ font-weight:700; font-size:10px; letter-spacing:.6px; }
+    .pathlab{ font-weight:700; font-size:11px; letter-spacing:.4px; }
+  </style>
+
+  <!-- arrowheads -->
+  <marker id="ah-blue" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0 0 L10 5 L0 10 Z" fill="#1A73E8"/></marker>
+  <marker id="ah-green" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7.5" markerHeight="7.5" orient="auto-start-reverse">
+    <path d="M0 0 L10 5 L0 10 Z" fill="#1FB457"/></marker>
+  <marker id="ah-red" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M0 0 L10 5 L0 10 Z" fill="#C5221F"/></marker>
+  <marker id="ah-indigo" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0 0 L10 5 L0 10 Z" fill="#5B4BE6"/></marker>
+
+  <!-- soft card shadow -->
+  <filter id="cardsh" x="-20%" y="-20%" width="140%" height="140%">
+    <feDropShadow dx="0" dy="2" stdDeviation="6" flood-color="#3C4043" flood-opacity="0.14"/></filter>
+  <filter id="herosh" x="-25%" y="-25%" width="150%" height="150%">
+    <feDropShadow dx="0" dy="6" stdDeviation="16" flood-color="#312A6B" flood-opacity="0.35"/></filter>
+
+  <!-- gradients -->
+  <linearGradient id="hermesGrad" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#5B4BE6"/><stop offset="1" stop-color="#7C3AED"/></linearGradient>
+  <linearGradient id="violetGrad" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#7C3AED"/><stop offset="1" stop-color="#A855F7"/></linearGradient>
+  <linearGradient id="railGrad" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#20222B"/><stop offset="1" stop-color="#111119"/></linearGradient>
+
+  <!-- background dot grid -->
+  <pattern id="dots" width="26" height="26" patternUnits="userSpaceOnUse">
+    <circle cx="1.6" cy="1.6" r="1.2" fill="#E9ECEF"/></pattern>
+</defs>
+
+<!-- ============================== BACKGROUND ============================== -->
+<g id="layer-background">
+  <rect x="0" y="0" width="1320" height="1080" fill="#FFFFFF"/>
+  <rect x="0" y="0" width="1320" height="1080" fill="url(#dots)" opacity="0.55"/>
+  <rect x="8" y="8" width="1304" height="1064" rx="18" fill="none" stroke="#E6E8EB" stroke-width="1.5"/>
+</g>
+
+<!-- ============================== TITLE + LEGEND ============================== -->
+<g id="layer-title">
+  <rect x="56" y="48" width="6" height="86" rx="3" fill="#1A73E8"/>
+  <text class="title" x="80" y="90">Setup Hermes Agent for WhatsApp</text>
+  <text class="subtitle" x="82" y="124">From a WhatsApp command to an automated action</text>
+
+  <g id="legend">
+    <rect x="982" y="46" width="282" height="94" rx="10" fill="#FFFFFF" stroke="#DADCE0" filter="url(#cardsh)"/>
+    <text class="tag" x="1000" y="68" fill="#5F6368">LEGEND</text>
+    <line x1="1000" y1="86" x2="1030" y2="86" stroke="#1A73E8" stroke-width="3" marker-end="url(#ah-blue)"/>
+    <text class="legend" x="1040" y="90">request &amp; tool-call path</text>
+    <line x1="1000" y1="108" x2="1030" y2="108" stroke="#1FB457" stroke-width="3" marker-end="url(#ah-green)"/>
+    <text class="legend" x="1040" y="112">response back to WhatsApp</text>
+    <rect x="1000" y="122" width="14" height="12" rx="3" fill="#13131A"/>
+    <text class="legend" x="1040" y="132">runs on Railway · /opt/data</text>
+  </g>
+</g>
+
+<!-- ============================== PHASE RIBBON ============================== -->
+<g id="layer-phase-ribbon">
+  <!-- chips: MESSAGE IN / PROCESS / DECIDE / EXECUTE / FORMAT / MESSAGE OUT -->
+  <g id="phase-in">
+    <rect x="56" y="160" width="176" height="60" rx="12" fill="#E7F8EE" stroke="#1FB457"/>
+    <circle cx="86" cy="190" r="15" fill="#1FB457"/><text class="phasenum" x="86" y="195" text-anchor="middle">01</text>
+    <text class="phase" x="110" y="187" fill="#0B7A43">MESSAGE</text>
+    <text class="phase" x="110" y="205" fill="#0B7A43">IN</text>
+  </g>
+  <text x="245" y="197" font-size="22" fill="#BDC1C6" text-anchor="middle">›</text>
+  <g id="phase-process">
+    <rect x="262" y="160" width="176" height="60" rx="12" fill="#E8F0FE" stroke="#1A73E8"/>
+    <circle cx="292" cy="190" r="15" fill="#1A73E8"/><text class="phasenum" x="292" y="195" text-anchor="middle">02</text>
+    <text class="phase" x="316" y="196" fill="#1557B0">PROCESS</text>
+  </g>
+  <text x="451" y="197" font-size="22" fill="#BDC1C6" text-anchor="middle">›</text>
+  <g id="phase-decide">
+    <rect x="468" y="160" width="176" height="60" rx="12" fill="#FEF3E0" stroke="#E8A400"/>
+    <circle cx="498" cy="190" r="15" fill="#E8A400"/><text class="phasenum" x="498" y="195" text-anchor="middle">03</text>
+    <text class="phase" x="522" y="196" fill="#B06000">DECIDE</text>
+  </g>
+  <text x="657" y="197" font-size="22" fill="#BDC1C6" text-anchor="middle">›</text>
+  <g id="phase-execute">
+    <rect x="674" y="160" width="176" height="60" rx="12" fill="#EEECFD" stroke="#5B4BE6"/>
+    <circle cx="704" cy="190" r="15" fill="#5B4BE6"/><text class="phasenum" x="704" y="195" text-anchor="middle">04</text>
+    <text class="phase" x="728" y="196" fill="#4338CA">EXECUTE</text>
+  </g>
+  <text x="863" y="197" font-size="22" fill="#BDC1C6" text-anchor="middle">›</text>
+  <g id="phase-format">
+    <rect x="880" y="160" width="176" height="60" rx="12" fill="#F4ECFE" stroke="#7C3AED"/>
+    <circle cx="910" cy="190" r="15" fill="#7C3AED"/><text class="phasenum" x="910" y="195" text-anchor="middle">05</text>
+    <text class="phase" x="934" y="196" fill="#6D28D9">FORMAT</text>
+  </g>
+  <text x="1069" y="197" font-size="22" fill="#BDC1C6" text-anchor="middle">›</text>
+  <g id="phase-out">
+    <rect x="1086" y="160" width="176" height="60" rx="12" fill="#E7F8EE" stroke="#1FB457"/>
+    <circle cx="1116" cy="190" r="15" fill="#1FB457"/><text class="phasenum" x="1116" y="195" text-anchor="middle">06</text>
+    <text class="phase" x="1140" y="187" fill="#0B7A43">MESSAGE</text>
+    <text class="phase" x="1140" y="205" fill="#0B7A43">OUT</text>
+  </g>
+</g>
+
+<!-- ============================== CONNECTORS (under components) ============================== -->
+<g id="layer-connectors" fill="none" stroke-width="3">
+  <!-- forward request path (blue) -->
+  <path id="path-cmd"        d="M290 400 C 306 392, 312 380, 322 376" stroke="#1A73E8" marker-end="url(#ah-blue)"/>
+  <path id="path-bail-log"   d="M518 375 L 534 375" stroke="#1A73E8" marker-end="url(#ah-blue)"/>
+  <path id="path-log-allow"  d="M688 375 L 702 375" stroke="#1A73E8" marker-end="url(#ah-blue)"/>
+  <path id="path-allow-herm" d="M892 375 L 924 375" stroke="#1A73E8" marker-end="url(#ah-blue)"/>
+  <!-- deny branch (red dashed) -->
+  <path id="path-deny"       d="M799 450 L 799 468" stroke="#C5221F" stroke-width="2.5" stroke-dasharray="5 4" marker-end="url(#ah-red)"/>
+  <!-- hermes orchestrates tools (indigo, down) -->
+  <path id="path-herm-fire"  d="M1150 616 C 1156 628, 1162 636, 1164 646" stroke="#5B4BE6" marker-end="url(#ah-indigo)"/>
+  <!-- tool pipeline right -> left (blue) -->
+  <path id="path-fire-scr"   d="M1076 723 L 1052 723" stroke="#1A73E8" marker-end="url(#ah-blue)"/>
+  <path id="path-scr-sheet"  d="M872 723 L 848 723" stroke="#1A73E8" marker-end="url(#ah-blue)"/>
+  <path id="path-sheet-llm"  d="M668 723 L 644 723" stroke="#1A73E8" marker-end="url(#ah-blue)"/>
+  <!-- response back to phone (green) -->
+  <path id="path-llm-phone"  d="M464 723 C 380 723, 340 706, 294 692" stroke="#1FB457" marker-end="url(#ah-green)"/>
+
+  <!-- connector labels -->
+  <g stroke="none">
+    <rect x="300" y="345" width="66" height="18" rx="9" fill="#E8F0FE"/><text class="pathlab" x="333" y="358" fill="#1557B0" text-anchor="middle">command</text>
+    <rect x="806" y="356" width="42" height="17" rx="8.5" fill="#E7F8EE"/><text class="pathlab" x="827" y="368" fill="#0B7A43" text-anchor="middle">pass</text>
+    <text class="pathlab" x="799" y="486" fill="#C5221F" text-anchor="middle">deny · drop</text>
+    <rect x="1170" y="622" width="96" height="18" rx="9" fill="#EEECFD"/><text class="pathlab" x="1218" y="635" fill="#4338CA" text-anchor="middle">tool calls</text>
+    <rect x="350" y="668" width="72" height="18" rx="9" fill="#E7F8EE"/><text class="pathlab" x="386" y="681" fill="#0B7A43" text-anchor="middle">response</text>
+  </g>
+</g>
+
+<!-- ============================== MAIN COMPONENTS ============================== -->
+
+<!-- ========== 1. PHONE / WHATSAPP (MESSAGE IN + OUT anchor) ========== -->
+<g id="comp-phone" transform="translate(60,296)">
+  <rect x="0" y="0" width="230" height="520" rx="34" fill="#0E1621" stroke="#232D3B" stroke-width="2" filter="url(#herosh)"/>
+  <circle cx="115" cy="9" r="3" fill="#2A3340"/>
+  <rect x="12" y="14" width="206" height="492" rx="20" fill="#ECE5DD"/>
+  <!-- wa header -->
+  <path d="M12 34 Q12 14 32 14 L198 14 Q218 14 218 34 L218 60 L12 60 Z" fill="#128C7E"/>
+  <path d="M28 30 l-7 7 l7 7" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="52" cy="37" r="13" fill="#5B4BE6"/><text x="52" y="42" text-anchor="middle" class="badge" font-size="13">H</text>
+  <text x="72" y="34" class="white" font-weight="700" font-size="13">Hermes Agent</text>
+  <text x="72" y="49" fill="#CDEDE6" font-size="10">online</text>
+  <!-- accent phase bar -->
+  <rect x="12" y="14" width="4" height="492" fill="#1FB457" opacity="0.9"/>
+
+  <!-- outgoing command bubble -->
+  <g id="phone-cmd-bubble">
+    <path d="M96 74 L206 74 Q212 74 212 80 L212 142 Q212 148 206 148 L96 148 Q90 148 90 142 L90 84 Q90 78 96 78 Z" fill="#DCF8C6"/>
+    <path d="M212 82 l10 -6 l-10 0 Z" fill="#DCF8C6"/>
+    <text x="102" y="96" class="mono" font-weight="700" fill="#1F5C3A">hermes:</text>
+    <text x="102" y="113" class="mono" fill="#202124">add acme.com</text>
+    <text x="102" y="130" class="mono" fill="#202124">to my Leads sheet</text>
+    <text x="204" y="142" text-anchor="end" font-size="8" fill="#5AA0C7">09:41 ✓✓</text>
+  </g>
+
+  <!-- processing chip -->
+  <g opacity="0.95">
+    <rect x="66" y="168" width="90" height="20" rx="10" fill="#FFFFFF" stroke="#E3E0DA"/>
+    <circle cx="80" cy="178" r="3" fill="#128C7E"/><circle cx="90" cy="178" r="3" fill="#128C7E" opacity="0.6"/><circle cx="100" cy="178" r="3" fill="#128C7E" opacity="0.3"/>
+    <text x="112" y="182" font-size="9.5" fill="#5F6368">working…</text>
+  </g>
+
+  <!-- incoming reply bubble (MESSAGE OUT) -->
+  <g id="phone-reply-bubble">
+    <path d="M24 352 L176 352 Q182 352 182 358 L182 452 Q182 458 176 458 L24 458 Q18 458 18 452 L18 362 Q18 356 24 356 Z" fill="#FFFFFF" stroke="#E3E0DA"/>
+    <path d="M18 360 l-10 -6 l10 0 Z" fill="#FFFFFF"/>
+    <circle cx="34" cy="372" r="8" fill="#1FB457"/><path d="M30 372 l3 3 l5 -6" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="48" y="376" font-weight="700" font-size="11.5" fill="#202124">Done</text>
+    <text x="26" y="398" font-size="11" fill="#202124">Acme Corp added to</text>
+    <text x="26" y="414" font-weight="700" font-size="11" fill="#0F9D58">Leads · row 42</text>
+    <text x="26" y="432" font-size="10" fill="#5F6368">CEO · 120 staff · SF</text>
+    <text x="172" y="450" text-anchor="end" font-size="8" fill="#9AA0A6">09:41</text>
+  </g>
+
+  <!-- input bar -->
+  <rect x="20" y="470" width="150" height="30" rx="15" fill="#FFFFFF" stroke="#E3E0DA"/>
+  <text x="34" y="489" font-size="11" fill="#9AA0A6">Message</text>
+  <circle cx="196" cy="485" r="16" fill="#128C7E"/><path d="M190 485 l12 -5 l-4 5 l4 5 Z" fill="#FFFFFF"/>
+  <!-- moto emblem -->
+  <circle cx="115" cy="510" r="7" fill="none" stroke="#39434F" stroke-width="1.5"/>
+  <path d="M111 513 l0 -6 l4 4 l4 -4 l0 6" fill="none" stroke="#39434F" stroke-width="1.5" stroke-linejoin="round"/>
+</g>
+<g id="badge-1"><circle cx="82" cy="300" r="15" fill="#FFFFFF" stroke="#1FB457" stroke-width="2"/><text x="82" y="305" text-anchor="middle" font-weight="700" font-size="14" fill="#0B7A43">1</text></g>
+<text x="175" y="836" text-anchor="middle" class="lab">WhatsApp user + session · phone</text>
+
+<!-- ========== 2a. BAILEYS + BRIDGE.JS (PROCESS) ========== -->
+<g id="comp-baileys" transform="translate(322,300)">
+  <rect x="0" y="0" width="196" height="150" rx="12" fill="#FFFFFF" stroke="#DADCE0" filter="url(#cardsh)"/>
+  <rect x="0" y="0" width="4" height="150" rx="2" fill="#1A73E8"/>
+  <!-- node hexagon -->
+  <g transform="translate(18,18)">
+    <path d="M22 2 L40 12 L40 32 L22 42 L4 32 L4 12 Z" fill="#3C873A"/>
+    <text x="22" y="27" text-anchor="middle" fill="#FFFFFF" font-weight="700" font-size="10">node</text>
+  </g>
+  <text x="72" y="34" class="h">Baileys</text>
+  <text x="72" y="54" class="h2" fill="#3C4043">+ bridge.js</text>
+  <!-- socket / wifi glyph -->
+  <g transform="translate(150,20)" stroke="#1A73E8" stroke-width="2" fill="none" stroke-linecap="round">
+    <path d="M2 14 A12 12 0 0 1 26 14"/><path d="M6 16 A8 8 0 0 1 22 16"/><path d="M10 18 A4 4 0 0 1 18 18"/>
+    <circle cx="14" cy="21" r="1.6" fill="#1A73E8" stroke="none"/>
+  </g>
+  <text x="16" y="92" class="labd">WhatsApp Web · multi-device</text>
+  <text x="16" y="108" class="labd">socket → message events</text>
+  <rect x="16" y="118" width="164" height="22" rx="5" fill="#1E1E2E"/>
+  <text x="26" y="133" class="mono" fill="#7EE787">&gt;_ node bridge.js</text>
+</g>
+<g id="badge-2"><circle cx="332" cy="300" r="15" fill="#FFFFFF" stroke="#1A73E8" stroke-width="2"/><text x="332" y="305" text-anchor="middle" font-weight="700" font-size="14" fill="#1557B0">2</text></g>
+
+<!-- ========== 2b. MESSAGE LOGGING (PROCESS) ========== -->
+<g id="comp-logging" transform="translate(538,312)">
+  <rect x="0" y="0" width="150" height="126" rx="12" fill="#FFFFFF" stroke="#DADCE0" filter="url(#cardsh)"/>
+  <rect x="0" y="0" width="4" height="126" rx="2" fill="#1A73E8"/>
+  <text x="14" y="26" class="h2">Message logging</text>
+  <rect x="14" y="36" width="122" height="52" rx="5" fill="#0F1720"/>
+  <rect x="22" y="44" width="8" height="6" rx="1" fill="#1FB457"/><text x="34" y="50" class="mono" font-size="9" fill="#9DE3B7">in  09:41 acme…</text>
+  <rect x="22" y="56" width="8" height="6" rx="1" fill="#1A73E8"/><text x="34" y="62" class="mono" font-size="9" fill="#9CC6F5">agent  start</text>
+  <rect x="22" y="68" width="8" height="6" rx="1" fill="#F5C542"/><text x="34" y="74" class="mono" font-size="9" fill="#F1D48A">tool  firecrawl</text>
+  <!-- db cylinder -->
+  <g transform="translate(104,96)">
+    <ellipse cx="12" cy="4" rx="12" ry="4" fill="#5F6368"/>
+    <path d="M0 4 L0 16 A12 4 0 0 0 24 16 L24 4" fill="#7A828B"/>
+    <ellipse cx="12" cy="4" rx="12" ry="4" fill="#9AA0A6"/>
+  </g>
+  <text x="14" y="110" class="labd">append → whatsapp</text>
+  <text x="14" y="122" class="labd">logs</text>
+</g>
+
+<!-- ========== 3. ALLOWLIST CHECK (DECIDE) ========== -->
+<g id="comp-allowlist" transform="translate(706,300)">
+  <rect x="0" y="0" width="186" height="150" rx="12" fill="#FFFFFF" stroke="#DADCE0" filter="url(#cardsh)"/>
+  <rect x="0" y="0" width="4" height="150" rx="2" fill="#E8A400"/>
+  <text x="18" y="28" class="h2">Allowlist check</text>
+  <!-- shield -->
+  <g transform="translate(20,44)">
+    <path d="M26 2 L48 10 L48 30 Q48 50 26 60 Q4 50 4 30 L4 10 Z" fill="#FEF3E0" stroke="#E8A400" stroke-width="2"/>
+    <path d="M16 30 l7 8 l14 -18" fill="none" stroke="#B06000" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <text x="84" y="60" font-size="12.5" fill="#202124">sender ∈</text>
+  <text x="84" y="76" font-weight="700" font-size="12.5" fill="#202124">allowlist ?</text>
+  <circle cx="90" cy="98" r="4" fill="#137333"/><text x="100" y="102" font-size="12" fill="#137333">✓ pass → agent</text>
+  <circle cx="90" cy="120" r="4" fill="#C5221F"/><text x="100" y="124" font-size="12" fill="#C5221F">✗ deny → drop</text>
+</g>
+<g id="badge-3"><circle cx="716" cy="300" r="15" fill="#FFFFFF" stroke="#E8A400" stroke-width="2"/><text x="716" y="305" text-anchor="middle" font-weight="700" font-size="14" fill="#B06000">3</text></g>
+<!-- deny chip -->
+<g id="comp-deny">
+  <rect x="740" y="470" width="118" height="28" rx="8" fill="#FCECEA" stroke="#EBB4AF"/>
+  <text x="799" y="488" text-anchor="middle" font-size="11" fill="#C5221F">ignored · logged</text>
+</g>
+
+<!-- ========== 4. HERMES AGENT (EXECUTE hero) ========== -->
+<g id="comp-hermes" transform="translate(928,300)">
+  <rect x="0" y="0" width="332" height="316" rx="18" fill="url(#hermesGrad)" filter="url(#herosh)"/>
+  <rect x="0" y="0" width="332" height="316" rx="18" fill="none" stroke="#4338CA" stroke-opacity="0.5"/>
+  <!-- winged messenger bot -->
+  <g id="hermes-bot" transform="translate(26,34)">
+    <!-- wings -->
+    <path d="M6 30 q-22 -10 -40 -2 q14 1 18 9 q-16 -3 -26 6 q15 0 20 8 q-12 0 -18 10 q20 -12 40 -6 Z" fill="#F5C542"/>
+    <path d="M74 30 q22 -10 40 -2 q-14 1 -18 9 q16 -3 26 6 q-15 0 -20 8 q12 0 18 10 q-20 -12 -40 -6 Z" fill="#F5C542"/>
+    <!-- head -->
+    <line x1="40" y1="6" x2="40" y2="-6" stroke="#FFFFFF" stroke-width="2.5"/><circle cx="40" cy="-9" r="3.5" fill="#F5C542"/>
+    <rect x="12" y="6" width="56" height="46" rx="13" fill="#FFFFFF"/>
+    <circle cx="30" cy="28" r="5.5" fill="#5B4BE6"/><circle cx="50" cy="28" r="5.5" fill="#5B4BE6"/>
+    <circle cx="31.5" cy="26.5" r="1.6" fill="#FFFFFF"/><circle cx="51.5" cy="26.5" r="1.6" fill="#FFFFFF"/>
+    <path d="M30 40 q10 8 20 0" fill="none" stroke="#7C3AED" stroke-width="2.5" stroke-linecap="round"/>
+  </g>
+  <text x="128" y="52" class="white" font-weight="700" font-size="23">Hermes Agent</text>
+  <text x="128" y="74" fill="#DDD9F8" font-size="12.5">autonomous, skill-driven agent</text>
+  <rect x="128" y="86" width="150" height="20" rx="10" fill="#FFFFFF" fill-opacity="0.18"/>
+  <text x="203" y="100" text-anchor="middle" class="white" font-size="11" font-weight="700">04 · EXECUTE</text>
+
+  <!-- SKILL.md sub-card -->
+  <g id="hermes-skillmd" transform="translate(20,120)">
+    <rect x="0" y="0" width="176" height="176" rx="10" fill="#FFFFFF"/>
+    <path d="M14 12 h32 l10 10 v20 h-42 Z" fill="#EAF1FE" stroke="#1A73E8" stroke-width="1.5"/>
+    <path d="M46 12 v10 h10" fill="none" stroke="#1A73E8" stroke-width="1.5"/>
+    <text x="64" y="24" font-weight="700" font-size="13" fill="#202124">SKILL.md</text>
+    <text x="64" y="38" font-size="10" fill="#5F6368">the agent's playbook</text>
+    <line x1="14" y1="52" x2="162" y2="52" stroke="#EDEFF2"/>
+    <text x="16" y="72" class="mono" font-size="10.5" fill="#7C3AED"># when to act</text>
+    <text x="16" y="90" class="mono" font-size="10.5" fill="#202124">1 · scrape the url</text>
+    <text x="16" y="108" class="mono" font-size="10.5" fill="#202124">2 · run parse script</text>
+    <text x="16" y="126" class="mono" font-size="10.5" fill="#202124">3 · append to sheet</text>
+    <text x="16" y="144" class="mono" font-size="10.5" fill="#202124">4 · reply to user</text>
+    <rect x="14" y="152" width="80" height="18" rx="9" fill="#E8F0FE"/><text x="54" y="165" text-anchor="middle" font-size="10" fill="#1557B0">skills/</text>
+  </g>
+
+  <!-- agent loop sub-card -->
+  <g id="hermes-loop" transform="translate(208,120)">
+    <rect x="0" y="0" width="104" height="176" rx="10" fill="#FFFFFF"/>
+    <text x="52" y="22" text-anchor="middle" font-weight="700" font-size="12" fill="#202124">agent loop</text>
+    <g font-size="11" fill="#3C4043" text-anchor="middle">
+      <rect x="14" y="34" width="76" height="24" rx="6" fill="#EEECFD"/><text x="52" y="50">read</text>
+      <rect x="14" y="66" width="76" height="24" rx="6" fill="#EEECFD"/><text x="52" y="82">plan</text>
+      <rect x="14" y="98" width="76" height="24" rx="6" fill="#EEECFD"/><text x="52" y="114">act</text>
+      <rect x="14" y="130" width="76" height="24" rx="6" fill="#EEECFD"/><text x="52" y="146">observe</text>
+    </g>
+    <path d="M52 58 L52 64 M52 90 L52 96 M52 122 L52 128" stroke="#5B4BE6" stroke-width="2" marker-end="url(#ah-indigo)"/>
+    <path d="M90 142 q16 -4 8 -60 q-2 -20 -22 -24" fill="none" stroke="#5B4BE6" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#ah-indigo)"/>
+  </g>
+</g>
+<g id="badge-4"><circle cx="940" cy="300" r="16" fill="#FFFFFF" stroke="#5B4BE6" stroke-width="2"/><text x="940" y="306" text-anchor="middle" font-weight="700" font-size="15" fill="#4338CA">4</text></g>
+
+<!-- ========== 4a. FIRECRAWL (external web tool) ========== -->
+<g id="comp-firecrawl" transform="translate(1076,648)">
+  <rect x="0" y="0" width="176" height="150" rx="12" fill="#FFFFFF" stroke="#DADCE0" filter="url(#cardsh)"/>
+  <rect x="0" y="0" width="4" height="150" rx="2" fill="#F97316"/>
+  <!-- browser window -->
+  <rect x="14" y="14" width="148" height="80" rx="6" fill="#FFF7F0" stroke="#F3D9C2"/>
+  <rect x="14" y="14" width="148" height="20" rx="6" fill="#FCE7D5"/>
+  <circle cx="26" cy="24" r="3" fill="#F97316"/><circle cx="36" cy="24" r="3" fill="#FBBF77"/><circle cx="46" cy="24" r="3" fill="#FDD9B0"/>
+  <rect x="56" y="19" width="98" height="10" rx="5" fill="#FFFFFF" stroke="#F3D9C2"/><text x="62" y="27" font-size="8" fill="#9A5B27">acme.com</text>
+  <!-- flame -->
+  <path d="M40 74 q-14 -8 -6 -22 q2 6 8 6 q-6 -12 6 -22 q-2 12 8 16 q10 5 6 16 q-2 8 -12 10 q6 -6 0 -12 q-2 8 -8 8 q4 4 0 12 Z" fill="#F97316"/>
+  <line x1="66" y1="52" x2="150" y2="52" stroke="#F3D9C2" stroke-width="2"/><line x1="66" y1="64" x2="140" y2="64" stroke="#F3D9C2" stroke-width="2"/><line x1="66" y1="76" x2="150" y2="76" stroke="#F3D9C2" stroke-width="2"/>
+  <text x="14" y="120" class="h2">Firecrawl</text>
+  <rect x="106" y="106" width="56" height="16" rx="8" fill="#FFF1E6"/><text x="134" y="118" text-anchor="middle" class="tag" fill="#C2410C">WEB API</text>
+  <text x="14" y="138" class="labd">scrape acme.com → data</text>
+</g>
+<g id="badge-4a"><circle cx="1086" cy="648" r="13" fill="#FFFFFF" stroke="#F97316" stroke-width="2"/><text x="1086" y="653" text-anchor="middle" font-weight="700" font-size="12" fill="#C2410C">a</text></g>
+
+<!-- ========== 4b. DETERMINISTIC SCRIPTS (terminal) ========== -->
+<g id="comp-scripts" transform="translate(872,648)">
+  <rect x="0" y="0" width="176" height="150" rx="12" fill="#FFFFFF" stroke="#DADCE0" filter="url(#cardsh)"/>
+  <rect x="0" y="0" width="4" height="150" rx="2" fill="#5B4BE6"/>
+  <!-- terminal -->
+  <rect x="14" y="14" width="148" height="80" rx="6" fill="#1E1E2E"/>
+  <rect x="14" y="14" width="148" height="18" rx="6" fill="#2A2A3D"/>
+  <circle cx="26" cy="23" r="3" fill="#FF5F57"/><circle cx="36" cy="23" r="3" fill="#FEBC2E"/><circle cx="46" cy="23" r="3" fill="#28C840"/>
+  <text x="22" y="52" class="mono" font-size="10" fill="#7EE787">$ node parse.js</text>
+  <text x="22" y="68" class="mono" font-size="10" fill="#C9D1D9">→ name, size, city</text>
+  <text x="22" y="84" class="mono" font-size="10" fill="#9DE3B7">✓ normalized</text>
+  <text x="14" y="120" class="h2">Deterministic scripts</text>
+  <text x="14" y="138" class="labd">scripts/ · pure functions</text>
+</g>
+<g id="badge-4b"><circle cx="882" cy="648" r="13" fill="#FFFFFF" stroke="#5B4BE6" stroke-width="2"/><text x="882" y="653" text-anchor="middle" font-weight="700" font-size="12" fill="#4338CA">b</text></g>
+
+<!-- ========== 4c. GOOGLE SHEETS (spreadsheet) ========== -->
+<g id="comp-sheets" transform="translate(668,648)">
+  <rect x="0" y="0" width="176" height="150" rx="12" fill="#FFFFFF" stroke="#DADCE0" filter="url(#cardsh)"/>
+  <rect x="0" y="0" width="4" height="150" rx="2" fill="#0F9D58"/>
+  <!-- sheets icon -->
+  <g transform="translate(16,16)">
+    <path d="M4 0 h20 l10 10 v34 a2 2 0 0 1 -2 2 h-28 a2 2 0 0 1 -2 -2 v-42 a2 2 0 0 1 2 -2 Z" fill="#0F9D58"/>
+    <path d="M24 0 v10 h10" fill="#0A7F46"/>
+    <rect x="9" y="18" width="20" height="22" rx="1.5" fill="#FFFFFF"/>
+    <line x1="9" y1="25" x2="29" y2="25" stroke="#0F9D58" stroke-width="1.4"/><line x1="9" y1="32" x2="29" y2="32" stroke="#0F9D58" stroke-width="1.4"/>
+    <line x1="16" y1="18" x2="16" y2="40" stroke="#0F9D58" stroke-width="1.4"/><line x1="22" y1="18" x2="22" y2="40" stroke="#0F9D58" stroke-width="1.4"/>
+  </g>
+  <!-- grid mock -->
+  <g transform="translate(66,16)">
+    <rect x="0" y="0" width="96" height="80" rx="4" fill="#FFFFFF" stroke="#DADCE0"/>
+    <rect x="0" y="0" width="96" height="16" fill="#E6F4EA"/>
+    <line x1="0" y1="16" x2="96" y2="16" stroke="#CBE7D5"/><line x1="0" y1="34" x2="96" y2="34" stroke="#EDEFF2"/>
+    <rect x="0" y="52" width="96" height="16" fill="#FEF7E0"/>
+    <line x1="0" y1="52" x2="96" y2="52" stroke="#F1E3AC"/><line x1="0" y1="68" x2="96" y2="68" stroke="#EDEFF2"/>
+    <line x1="32" y1="0" x2="32" y2="80" stroke="#EDEFF2"/><line x1="64" y1="0" x2="64" y2="80" stroke="#EDEFF2"/>
+    <text x="48" y="12" text-anchor="middle" font-size="8" fill="#0B7A43" font-weight="700">Leads</text>
+    <text x="4" y="64" font-size="8" fill="#B06000" font-weight="700">42 Acme…</text>
+  </g>
+  <text x="14" y="120" class="h2">Google Sheets</text>
+  <rect x="112" y="106" width="50" height="16" rx="8" fill="#E6F4EA"/><text x="137" y="118" text-anchor="middle" class="tag" fill="#0B7A43">SHEETS</text>
+  <text x="14" y="138" class="labd">append lead → Leads tab</text>
+</g>
+<g id="badge-4c"><circle cx="678" cy="648" r="13" fill="#FFFFFF" stroke="#0F9D58" stroke-width="2"/><text x="678" y="653" text-anchor="middle" font-weight="700" font-size="12" fill="#0B7A43">c</text></g>
+
+<!-- ========== 5. LLM FORMATTING (FORMAT) ========== -->
+<g id="comp-llm-format" transform="translate(464,648)">
+  <rect x="0" y="0" width="176" height="150" rx="12" fill="#FFFFFF" stroke="#DADCE0" filter="url(#cardsh)"/>
+  <rect x="0" y="0" width="4" height="150" rx="2" fill="#7C3AED"/>
+  <!-- ai chip with sparkles -->
+  <g transform="translate(14,14)">
+    <rect x="0" y="0" width="54" height="54" rx="12" fill="url(#violetGrad)"/>
+    <path d="M27 12 l4 9 l9 4 l-9 4 l-4 9 l-4 -9 l-9 -4 l9 -4 Z" fill="#FFFFFF"/>
+    <path d="M42 34 l2 5 l5 2 l-5 2 l-2 5 l-2 -5 l-5 -2 l5 -2 Z" fill="#FFFFFF" opacity="0.85"/>
+  </g>
+  <!-- raw -> human -->
+  <rect x="78" y="16" width="84" height="20" rx="5" fill="#F3F0FF"/><text x="86" y="30" class="mono" font-size="9.5" fill="#6D28D9">{ row: 42 }</text>
+  <path d="M120 40 l0 8" stroke="#7C3AED" stroke-width="2" marker-end="url(#ah-indigo)"/>
+  <rect x="78" y="50" width="84" height="20" rx="10" fill="#DCF8C6"/><text x="86" y="64" font-size="9.5" fill="#1F5C3A">“Done ✓ …”</text>
+  <text x="14" y="120" class="h2">LLM formatting</text>
+  <text x="14" y="138" class="labd">compose WhatsApp reply</text>
+</g>
+<g id="badge-5"><circle cx="474" cy="648" r="13" fill="#FFFFFF" stroke="#7C3AED" stroke-width="2"/><text x="474" y="653" text-anchor="middle" font-weight="700" font-size="12" fill="#6D28D9">5</text></g>
+<g id="badge-6"><circle cx="250" cy="654" r="14" fill="#FFFFFF" stroke="#1FB457" stroke-width="2"/><text x="250" y="659" text-anchor="middle" font-weight="700" font-size="13" fill="#0B7A43">6</text></g>
+
+<!-- EXECUTE cluster caption -->
+<text x="860" y="636" text-anchor="middle" class="labd" fill="#7C3AED" font-weight="700">Hermes orchestrates external tools + deterministic scripts</text>
+
+<!-- ============================== INFRASTRUCTURE BAND ============================== -->
+<g id="layer-infra">
+  <rect x="44" y="858" width="1232" height="174" rx="16" fill="#F1F3F4" stroke="#E1E4E8"/>
+  <text x="64" y="884" class="tag" fill="#5F6368">INFRASTRUCTURE</text>
+  <text x="196" y="884" font-size="12" fill="#80868B">▲ hosts the runtime, agent, skills, scripts &amp; logs above</text>
+
+  <!-- Railway -->
+  <g id="comp-railway" transform="translate(64,896)">
+    <rect x="0" y="0" width="300" height="116" rx="12" fill="#FFFFFF" stroke="#DADCE0" filter="url(#cardsh)"/>
+    <g transform="translate(20,26)">
+      <path d="M8 40 a18 18 0 0 1 2 -35 a20 20 0 0 1 37 6 a15 15 0 0 1 5 29 Z" fill="url(#railGrad)"/>
+      <rect x="16" y="24" width="26" height="4" rx="2" fill="#B794F6"/><rect x="16" y="31" width="20" height="4" rx="2" fill="#8B5CF6"/>
+    </g>
+    <text x="92" y="42" font-weight="700" font-size="18" fill="#13131A">Railway</text>
+    <text x="92" y="64" class="lab">cloud hosting · always-on deploy</text>
+    <rect x="92" y="76" width="176" height="22" rx="11" fill="#F3EEFE"/><text x="180" y="91" text-anchor="middle" font-size="11" fill="#6D28D9">Node.js service · 24 / 7</text>
+  </g>
+
+  <!-- /opt/data -->
+  <g id="comp-optdata" transform="translate(388,896)">
+    <rect x="0" y="0" width="452" height="116" rx="12" fill="#FFFFFF" stroke="#DADCE0" filter="url(#cardsh)"/>
+    <text x="18" y="30" class="mono" font-weight="700" font-size="15" fill="#202124">/opt/data/</text>
+    <text x="120" y="30" font-size="11" fill="#80868B">persistent volume</text>
+    <!-- row skills -->
+    <g transform="translate(20,44)">
+      <path d="M2 4 h10 l3 4 h13 a2 2 0 0 1 2 2 v12 a2 2 0 0 1 -2 2 h-26 a2 2 0 0 1 -2 -2 v-16 a2 2 0 0 1 2 -2 Z" fill="#F5C542"/>
+      <text x="38" y="14" class="mono" font-weight="700" font-size="12" fill="#202124">skills/</text>
+      <text x="112" y="14" font-size="11" fill="#5F6368">SKILL.md · agent playbooks</text>
+    </g>
+    <!-- row scripts -->
+    <g transform="translate(20,72)">
+      <path d="M2 4 h10 l3 4 h13 a2 2 0 0 1 2 2 v12 a2 2 0 0 1 -2 2 h-26 a2 2 0 0 1 -2 -2 v-16 a2 2 0 0 1 2 -2 Z" fill="#F5C542"/>
+      <text x="38" y="14" class="mono" font-weight="700" font-size="12" fill="#202124">scripts/</text>
+      <text x="112" y="14" font-size="11" fill="#5F6368">deterministic *.js / *.py</text>
+    </g>
+    <!-- row logs -->
+    <g transform="translate(300,44)">
+      <g transform="translate(0,2)"><ellipse cx="12" cy="4" rx="12" ry="4" fill="#1A73E8"/><path d="M0 4 v34 a12 4 0 0 0 24 0 v-34" fill="#4C93F0"/><ellipse cx="12" cy="4" rx="12" ry="4" fill="#8AB8F5"/>
+        <path d="M0 16 a12 4 0 0 0 24 0 M0 28 a12 4 0 0 0 24 0" fill="none" stroke="#FFFFFF" stroke-opacity="0.7"/></g>
+      <text x="34" y="16" class="mono" font-weight="700" font-size="12" fill="#202124">whatsapp</text>
+      <text x="34" y="32" class="mono" font-weight="700" font-size="12" fill="#202124">logs</text>
+      <text x="34" y="47" font-size="10.5" fill="#5F6368">message history</text>
+    </g>
+  </g>
+
+  <!-- Phone -->
+  <g id="comp-device" transform="translate(868,896)">
+    <rect x="0" y="0" width="388" height="116" rx="12" fill="#FFFFFF" stroke="#DADCE0" filter="url(#cardsh)"/>
+    <g transform="translate(22,24)">
+      <rect x="0" y="0" width="44" height="70" rx="8" fill="#0E1621"/>
+      <rect x="4" y="6" width="36" height="52" rx="4" fill="#128C7E"/>
+      <path d="M22 20 a8 8 0 1 0 0.1 0 M18 32 l-3 5 l6 -1" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="22" cy="64" r="4" fill="none" stroke="#39434F" stroke-width="1.4"/><path d="M20 66 l0 -3 l2 2 l2 -2 l0 3" fill="none" stroke="#39434F" stroke-width="1.4" stroke-linejoin="round"/>
+    </g>
+    <text x="84" y="42" font-weight="700" font-size="17" fill="#202124">Phone</text>
+    <text x="84" y="64" class="lab">runs WhatsApp · paired via Baileys</text>
+    <rect x="84" y="76" width="150" height="22" rx="11" fill="#E7F8EE"/><text x="159" y="91" text-anchor="middle" font-size="11" fill="#0B7A43">physical device · online</text>
+  </g>
+</g>
+
+<!-- ============================== FOOTER ============================== -->
+<text x="56" y="1058" font-size="11" fill="#9AA0A6">Hermes Agent · WhatsApp automation architecture, static poster, animation-ready groups</text>
+<text x="1264" y="1058" text-anchor="end" font-size="11" fill="#9AA0A6">1320 × 1080</text>
+
+</svg>

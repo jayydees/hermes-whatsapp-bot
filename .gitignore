@@ -1,0 +1,35 @@
+# Secrets and credentials
+.env
+*.env
+!.env.example
+auth.json
+client.json
+client_secret*.json
+*-token.json
+gmeet-token.json
+secrets/
+*service-account*.json
+*-sa.json
+
+# WhatsApp login and message data
+whatsapp/
+session/
+group_logs/
+*.jsonl
+sessions.json
+
+# Backups (they contain all of the above)
+backups/
+deploy/backups/
+*.tar.gz
+*.tgz
+
+# Collected data
+*.db
+*.db-*
+raw/
+pmjobs-data/
+test/fixtures/
+
+node_modules/
+__pycache__/
